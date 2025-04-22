@@ -1,0 +1,33 @@
+{
+    "session": "1tlspbvi",
+    "page": [
+        {
+            "id": 1,
+            "name": "slug-page-name",
+            "block": [
+                {
+                    "id": "block-4981634",
+                    "type": "hero",
+                    "name": "Hero Block",
+                    "title": "Welcome to Our Site!",
+                    "sub_title": "A place to showcase your products.",
+                    "description": "This is a hero section with catchy text and an attractive image."
+                },
+                {
+                    "id": "block-9465752",
+                    "type": "banner",
+                    "name": "Banner Block",
+                    "description": "This is a hero section with catchy text and an attractive image."
+                },
+                {
+                    "id": "block-4901441",
+                    "type": "hero",
+                    "name": "Hero Block",
+                    "title": "Welcome to Our Site!",
+                    "sub_title": "A place to showcase your products.",
+                    "description": "This is a hero section with catchy text and an attractive image."
+                }
+            ]
+        }
+    ]
+}
