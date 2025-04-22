@@ -10,8 +10,8 @@
 
 - You can just simply clone the project to try it for yourself.
 - You need a wamp or xampp because the example is in .php.
-- `git clone https://github.com/dvxgit-jsoriano/PHP-PracticalExample-DragAndDropBlocks.git`
-- Test it. `http://localhost/PHP-PracticalExample-DragAndDropBlocks`
+- `git clone https://github.com/dvxgit-jsoriano/cms-page-builder.git`
+- Test it. `http://localhost/cms-page-builder`
 
 ## Sample Screenshots
 - You can drag from the left blocks selection, then drop to the right contents panel.
