@@ -30,7 +30,8 @@ $foundBlock = null;
 
 if (isset($pageData['page'][0]['block']) && is_array($pageData['page'][0]['block'])) {
     foreach ($pageData['page'][0]['block'] as $block) {
-        if (isset($block['id']) && intval($block['id']) === $blockId) {  // <-- force both to int
+        app_log("Checking block id: " . ($block['id'] ?? 'no-id'));
+        if (isset($block['id']) && $block['id'] === $_GET['id']) {
             $foundBlock = $block;
             break;
         }

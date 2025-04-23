@@ -38,13 +38,14 @@ echo "Your session file: " . $_SESSION['page_data_file'];
   <title>CMS Page Builder</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
   
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 <body class="p-4 bg-gray-50">
@@ -56,7 +57,7 @@ echo "Your session file: " . $_SESSION['page_data_file'];
         <ul id="draggable-list" class="space-y-2">
           <li class="p-4 bg-white border rounded shadow hover:bg-gray-100 cursor-pointer" data-block-type="hero">Block Hero</li>
           <li class="p-4 bg-white border rounded shadow hover:bg-gray-100 cursor-pointer" data-block-type="banner">Block Banner</li>
-          <li class="p-4 bg-white border rounded shadow hover:bg-gray-100 cursor-pointer" data-block-type="left-image">Block Left Image</li>
+          <li class="p-4 bg-white border rounded shadow hover:bg-gray-100 cursor-pointer" data-block-type="navigation">Block Navigation</li>
         </ul>
     </div>
 
@@ -83,33 +84,6 @@ echo "Your session file: " . $_SESSION['page_data_file'];
     </button>
   </div>
   <div></div>
-</div>
-
-<!-- Bootstrap Modal for Block Editing -->
-<div class="modal fade" id="blockEditModal" tabindex="-1" aria-labelledby="blockEditModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="blockEditModalLabel">Edit Block</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="blockEditForm">
-          <!-- Dynamic form fields will go here -->
-          <div id="blockFormFields"></div>
-          <input type="hidden" id="blockId" name="id">
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id="saveBlockChanges">Save changes</button>
-      </div>
-
-    </div>
-  </div>
 </div>
 
 
@@ -225,26 +199,50 @@ echo "Your session file: " . $_SESSION['page_data_file'];
                             Edit
                         </button>
                         <div class="p-6 bg-blue-100 rounded shadow">
-                            <h1 class="text-2xl font-bold mb-2">${blockData.title}</h1>
-                            <p class="text-gray-700">${blockData.description}</p>
+                            <h1 class="text-2xl font-bold mb-2">${escapeHtml(blockData.title)}</h1>
+                            <p class="text-gray-700">${escapeHtml(blockData.description)}</p>
                         </div>
                     </section>
                 `;
             case 'banner':
                 return `
-                    <div data-id="${blockData.id}" class="p-4 bg-yellow-100 rounded shadow text-center">
-                        <p class="font-semibold">${blockData.description}</p>
-                    </div>
-                `;
-            case 'left-image':
-                return `
-                    <div data-id="${blockData.id}" class="flex items-center gap-4 p-4 bg-green-100 rounded shadow">
-                        <img src="${blockData.imageUrl}" class="w-20 h-20 rounded" />
-                        <div>
-                            <h3 class="text-lg font-bold">${blockData.title}</h3>
-                            <p class="text-sm text-gray-600">${blockData.description}</p>
+                    <section data-id="${blockData.id}" class="group relative">
+                        <button class="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded hover:bg-opacity-70 transition hidden group-hover:block edit-btn">
+                            Edit
+                        </button>
+                        <div class="p-4 bg-yellow-100 rounded shadow text-center">
+                            <p class="font-semibold">${escapeHtml(blockData.description)}</p>
                         </div>
-                    </div>
+                    </section>
+                `;
+            case 'navigation':
+                const logoSrc = blockData.logo?.src || '';
+                const logoLabel = blockData.logo?.label || '';
+                const centerLinks = blockData.centerLinks?.map(link => `
+                    <a href="${link.url}" class="p-4 underline-none text-gray-800 hover:text-gray-700">${link.title}</a>
+                `).join('') || '';
+
+                const profileTitle = blockData.profileLink?.title || '';
+                const profileUrl = blockData.profileLink?.url || '#';
+
+                return `
+                    <section data-id="${blockData.id}" class="group relative">
+                        <button class="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded hover:bg-opacity-70 transition hidden group-hover:block edit-btn">
+                            Edit
+                        </button>
+                        <div class="p-4 flex justify-between items-center bg-green-100 rounded shadow">
+                            <div class="flex items-center">
+                                <img src="${logoSrc}" class="h-8" alt="Logo">
+                                <span class="ms-2 font-medium">${logoLabel}</span>
+                            </div>
+                            <div class="flex flex-row">
+                                ${centerLinks}
+                            </div>
+                            <div>
+                                <a href="${profileUrl}" class="p-4 underline-none text-gray-800 hover:text-gray-700">${profileTitle}</a>
+                            </div>
+                        </div>
+                    </section>
                 `;
             default:
                 return `<div class="p-4 bg-red-100 rounded">Unknown block type</div>`;
@@ -252,46 +250,75 @@ echo "Your session file: " . $_SESSION['page_data_file'];
     }
 
     function openEditModal(blockData) {
-        $('#blockId').val(blockData.id);  // Save block id for the backend
-
         let html = '';
 
         switch (blockData.type) {
             case 'hero':
                 html = `
-                    <div class="mb-3">
-                        <label for="blockTitle" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="blockTitle" name="title" value="${blockData.title}">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Title</label>
+                        <input type="text" id="blockTitle" value="${blockData.title ?? ''}" class="w-full px-3 py-2 border rounded-md">
                     </div>
-                    <div class="mb-3">
-                        <label for="blockDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="blockDescription" name="description">${blockData.description}</textarea>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Description</label>
+                        <textarea id="blockDescription" class="w-full px-3 py-2 border rounded-md">${blockData.description ?? ''}</textarea>
                     </div>
                 `;
                 break;
 
             case 'banner':
                 html = `
-                    <div class="mb-3">
-                        <label for="blockDescription" class="form-label">Banner Text</label>
-                        <textarea class="form-control" id="blockDescription" name="description">${blockData.description}</textarea>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Banner Text</label>
+                        <textarea id="blockDescription" class="w-full px-3 py-2 border rounded-md">${blockData.description ?? ''}</textarea>
                     </div>
                 `;
                 break;
 
-            case 'left-image':
+            case 'navigation':
+                // Create logo and profile link input fields
                 html = `
-                    <div class="mb-3">
-                        <label for="blockTitle" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="blockTitle" name="title" value="${blockData.title}">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Logo Image URL</label>
+                        <input type="text" name="logoSrc" value="${blockData.logo?.src ?? ''}" class="w-full px-3 py-2 border rounded-md">
+
+                        <label class="block text-sm font-medium mt-2 mb-1">Logo Label</label>
+                        <input type="text" name="logoLabel" value="${blockData.logo?.label ?? ''}" class="w-full px-3 py-2 border rounded-md">
                     </div>
-                    <div class="mb-3">
-                        <label for="blockDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="blockDescription" name="description">${blockData.description}</textarea>
+                `;
+
+                // Center links section
+                if (Array.isArray(blockData.centerLinks)) {
+                    blockData.centerLinks.forEach((link, index) => {
+                        html += `
+                            <div class="mb-4 center-link">
+                                <label class="block text-sm font-medium mb-1">Center Link ${index + 1} Title</label>
+                                <input type="text" name="centerLinkTitle[]" value="${link.title ?? ''}" class="w-full px-3 py-2 border rounded-md">
+
+                                <label class="block text-sm font-medium mt-2 mb-1">Center Link ${index + 1} URL</label>
+                                <input type="url" name="centerLinkUrl[]" value="${link.url ?? ''}" class="w-full px-3 py-2 border rounded-md">
+
+                                <button type="button" class="remove-link-btn text-red-500 mt-2">Remove Link</button>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Add a new center link option
+                html += `
+                    <div class="mb-4">
+                        <button type="button" id="addCenterLinkBtn" class="swal2-confirm swal2-styled">Add New Center Link</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="blockImageUrl" class="form-label">Image URL</label>
-                        <input type="text" class="form-control" id="blockImageUrl" name="imageUrl" value="${blockData.imageUrl}">
+                `;
+
+                // Profile link fields
+                html += `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Profile Link Title</label>
+                        <input type="text" name="profileTitle" value="${blockData.profileLink?.title ?? ''}" class="w-full px-3 py-2 border rounded-md">
+
+                        <label class="block text-sm font-medium mt-2 mb-1">Profile Link URL</label>
+                        <input type="text" name="profileUrl" value="${blockData.profileLink?.url ?? ''}" class="w-full px-3 py-2 border rounded-md">
                     </div>
                 `;
                 break;
@@ -301,10 +328,93 @@ echo "Your session file: " . $_SESSION['page_data_file'];
                 break;
         }
 
-        $('#blockFormFields').html(html);
+        // Display SweetAlert with dynamic content
+        Swal.fire({
+            title: `Edit ${blockData.type.charAt(0).toUpperCase() + blockData.type.slice(1)} Block`,
+            html: html, // Use the correct variable here
+            showCancelButton: true,
+            confirmButtonText: 'Save changes',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                const updatedBlockData = {
+                    id: blockData.id,
+                    type: blockData.type
+                };
 
-        const modal = new bootstrap.Modal(document.getElementById('blockEditModal'));
-        modal.show();
+                // Collect form data based on block type
+                switch (blockData.type) {
+                    case 'hero':
+                        updatedBlockData.title = document.getElementById('blockTitle').value;
+                        updatedBlockData.description = document.getElementById('blockDescription').value;
+                        break;
+                    
+                    case 'banner':
+                        updatedBlockData.description = document.getElementById('blockDescription').value;
+                        break;
+                    
+                    case 'navigation':
+                        // Collect logo data
+                        updatedBlockData.logo = {
+                            src: document.querySelector('input[name="logoSrc"]').value,
+                            label: document.querySelector('input[name="logoLabel"]').value
+                        };
+
+                        // Collect center links
+                        updatedBlockData.centerLinks = [];
+                        document.querySelectorAll('.center-link').forEach((linkDiv) => {
+                            const linkTitle = linkDiv.querySelector('input[name="centerLinkTitle[]"]').value;
+                            const linkUrl = linkDiv.querySelector('input[name="centerLinkUrl[]"]').value;
+                            if (linkTitle && linkUrl) {
+                                updatedBlockData.centerLinks.push({ title: linkTitle, url: linkUrl });
+                            }
+                        });
+
+                        // Collect profile link
+                        updatedBlockData.profileLink = {
+                            title: document.querySelector('input[name="profileTitle"]').value,
+                            url: document.querySelector('input[name="profileUrl"]').value
+                        };
+                        break;
+                }
+
+                return updatedBlockData;
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                // Send updated block data to the server via AJAX
+                const updatedBlockData = result.value;
+                $.ajax({
+                    url: 'update-block.php',
+                    method: 'POST',
+                    data: updatedBlockData,
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Block updated successfully!');
+                            // You can also update the page dynamically here
+                        } else {
+                            alert('Failed to update block.');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error updating block.');
+                    }
+                });
+            }
+        });
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>"'`]/g, function(match) {
+            const escapeMap = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#x27;',
+                '`': '&#x60;'
+            };
+            return escapeMap[match];
+        });
     }
 
 
@@ -357,48 +467,14 @@ echo "Your session file: " . $_SESSION['page_data_file'];
 </script>
 
 <script>
-    $(document).on('click', '.edit-btn', function(e) {
-        e.preventDefault();
-
-        let section = $(this).closest('section');    // get the parent section
-        let blockId = section.data('id');            // get the block id
-
-        let overlay = $('#loading-overlay');
-        let sortableList = $('#sortable-list');
-
-        // Show loading overlay & dim background
-        overlay.removeClass('hidden');
-        sortableList.css('opacity', '0.5');
-
-        // Add 1 second delay for testing
-        setTimeout(function() {
-
-            $.ajax({
-                url: 'block.php?id=' + blockId,
-                method: 'GET',
-                success: function(response) {
-                    console.log(response);
-
-                    section.find('h1').text(response.title);
-                    section.find('p').text(response.description);
-                },
-                error: function(xhr) {
-                    console.error('Error fetching block:', xhr);
-                },
-                complete: function() {
-                    // Restore after AJAX finishes
-                    overlay.addClass('hidden');
-                    sortableList.css('opacity', '1');
-                }
-            });
-
-        }, 1000);
-    });
-</script>
-
-<script>
     document.getElementById('open-tab').addEventListener('click', () => {
-    const layoutContent = document.getElementById('sortable-list').innerHTML;
+    // Clone the layout content using jQuery
+    const $clonedLayout = $('#sortable-list').clone();
+
+    // Remove all elements with class 'edit-btn'
+    $clonedLayout.find('.edit-btn').remove();
+
+    const layoutContent = $clonedLayout.html();
 
     const html = 
       '<!DOCTYPE html>' +

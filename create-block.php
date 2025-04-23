@@ -36,14 +36,18 @@ switch ($blockType) {
         $newBlock = [
             "id" => "block-" . rand(1000000, 9999999),
             "type" => "navigation",
-            "menu" => [
-                [
-                    "id" => rand(100, 999),
-                    "name" => "home",
-                    "title" => "Home",
-                    "description" => "This is a navigation link to the home page.",
-                    "link_to" => "home.php"
-                ]
+            "logo" => [
+                "src" => "https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/232_Nintendo_Switch_logo-256.png",
+                "label" => "LOGO"
+            ],
+            "centerLinks" => [
+                ["title" => "Home", "url" => "#"],
+                ["title" => "Test", "url" => "#"],
+                ["title" => "About", "url" => "#"]
+            ],
+            "profileLink" => [
+                "title" => "Profile",
+                "url" => "#"
             ]
         ];
         break;
